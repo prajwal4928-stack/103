@@ -1,0 +1,488 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Random Quiz Game</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            text-align: center;
+            padding: 40px 15px;
+        }
+
+        .quiz {
+            background: white;
+            padding: 25px;
+            max-width: 450px;
+            margin: auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px #333;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #progress {
+            color: #764ba2;
+        }
+
+        #question {
+            margin: 25px 0;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            margin: 10px 0;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover:not(:disabled) {
+            background: #4b5fc7;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        #result {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #score {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="quiz">
+
+    <h1>🎮 Quiz Game</h1>
+
+    <h3 id="progress">Question 1 of 20</h3>
+
+    <h2 id="question">Loading...</h2>
+
+    <div id="answers"></div>
+
+    <p id="result"></p>
+
+    <p id="score">Score: 0</p>
+
+    <button onclick="nextQuestion()" id="next">
+        Next Question
+    </button>
+
+</div>
+
+<script>
+
+// QUESTION BANK - 30 QUESTIONS
+
+const allQuestions = [
+
+{
+q: "What is the capital of India?",
+a: ["Mumbai", "Delhi", "Chennai", "Kolkata"],
+c: "Delhi"
+},
+
+{
+q: "How many days are in a week?",
+a: ["5", "6", "7", "8"],
+c: "7"
+},
+
+{
+q: "What is 10 + 5?",
+a: ["10", "15", "20", "25"],
+c: "15"
+},
+
+{
+q: "Which planet is called the Red Planet?",
+a: ["Earth", "Mars", "Jupiter", "Venus"],
+c: "Mars"
+},
+
+{
+q: "Which language creates webpage structure?",
+a: ["HTML", "Python", "C", "Java"],
+c: "HTML"
+},
+
+{
+q: "How many months are in a year?",
+a: ["10", "11", "12", "13"],
+c: "12"
+},
+
+{
+q: "What is the largest animal?",
+a: ["Elephant", "Blue Whale", "Lion", "Giraffe"],
+c: "Blue Whale"
+},
+
+{
+q: "Which is the fastest land animal?",
+a: ["Tiger", "Horse", "Cheetah", "Lion"],
+c: "Cheetah"
+},
+
+{
+q: "What is 8 × 7?",
+a: ["54", "56", "64", "48"],
+c: "56"
+},
+
+{
+q: "Which gas do humans need to breathe?",
+a: ["Carbon dioxide", "Oxygen", "Nitrogen", "Hydrogen"],
+c: "Oxygen"
+},
+
+{
+q: "Which is the largest ocean?",
+a: ["Atlantic", "Indian", "Arctic", "Pacific"],
+c: "Pacific"
+},
+
+{
+q: "How many sides does a triangle have?",
+a: ["2", "3", "4", "5"],
+c: "3"
+},
+
+{
+q: "Where is the Eiffel Tower?",
+a: ["Italy", "France", "Germany", "Spain"],
+c: "France"
+},
+
+{
+q: "What is the boiling point of water at sea level?",
+a: ["50°C", "75°C", "100°C", "150°C"],
+c: "100°C"
+},
+
+{
+q: "Which is the closest star to Earth?",
+a: ["Moon", "Sun", "Sirius", "Mars"],
+c: "Sun"
+},
+
+{
+q: "Who wrote India's national anthem?",
+a: ["Mahatma Gandhi", "Rabindranath Tagore", "Nehru", "Subhas Bose"],
+c: "Rabindranath Tagore"
+},
+
+{
+q: "What is the square root of 64?",
+a: ["6", "7", "8", "9"],
+c: "8"
+},
+
+{
+q: "Which organ pumps blood?",
+a: ["Lungs", "Brain", "Heart", "Kidney"],
+c: "Heart"
+},
+
+{
+q: "How many colours are in a rainbow?",
+a: ["5", "6", "7", "8"],
+c: "7"
+},
+
+{
+q: "Which language is popular in data science?",
+a: ["Python", "HTML", "CSS", "XML"],
+c: "Python"
+},
+
+{
+q: "What is the largest planet?",
+a: ["Earth", "Mars", "Jupiter", "Venus"],
+c: "Jupiter"
+},
+
+{
+q: "How many legs does a spider have?",
+a: ["4", "6", "8", "10"],
+c: "8"
+},
+
+{
+q: "Which animal is called the King of the Jungle?",
+a: ["Tiger", "Lion", "Elephant", "Wolf"],
+c: "Lion"
+},
+
+{
+q: "What is 12 × 12?",
+a: ["124", "144", "132", "154"],
+c: "144"
+},
+
+{
+q: "Which is the smallest continent?",
+a: ["Asia", "Europe", "Australia", "Africa"],
+c: "Australia"
+},
+
+{
+q: "What is the chemical symbol for gold?",
+a: ["Ag", "Au", "Fe", "Go"],
+c: "Au"
+},
+
+{
+q: "How many hours are in a day?",
+a: ["12", "18", "24", "36"],
+c: "24"
+},
+
+{
+q: "Which device is used to type on a computer?",
+a: ["Mouse", "Monitor", "Keyboard", "Printer"],
+c: "Keyboard"
+},
+
+{
+q: "Which planet has famous rings?",
+a: ["Mercury", "Saturn", "Earth", "Mars"],
+c: "Saturn"
+},
+
+{
+q: "What is the national bird of India?",
+a: ["Parrot", "Peacock", "Eagle", "Sparrow"],
+c: "Peacock"
+}
+
+];
+
+// SHUFFLE QUESTIONS RANDOMLY
+
+function shuffleQuestions(array) {
+
+    let shuffled = [...array];
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+
+        let j = Math.floor(Math.random() * (i + 1));
+
+        [shuffled[i], shuffled[j]] =
+        [shuffled[j], shuffled[i]];
+
+    }
+
+    return shuffled;
+}
+
+
+// RANDOM 20 QUESTIONS
+
+let questions = shuffleQuestions(allQuestions).slice(0, 20);
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+
+// LOAD QUESTION
+
+function loadQuestion() {
+
+    answered = false;
+
+    let q = questions[current];
+
+    document.getElementById("progress").innerText =
+        "Question " + (current + 1) + " of 20";
+
+    document.getElementById("question").innerText = q.q;
+
+    document.getElementById("result").innerText = "";
+
+    document.getElementById("score").innerText =
+        "Score: " + score;
+
+    document.getElementById("next").innerText =
+        current === 19 ? "Finish Quiz" : "Next Question";
+
+    let html = "";
+
+    // Shuffle answer options too
+
+    let answers = shuffleQuestions(q.a);
+
+    answers.forEach(answer => {
+
+        html += `
+            <button onclick="checkAnswer(this, '${answer}')">
+                ${answer}
+            </button>
+        `;
+
+    });
+
+    document.getElementById("answers").innerHTML = html;
+
+}
+
+
+// CHECK ANSWER
+
+function checkAnswer(button, answer) {
+
+    if (answered) return;
+
+    answered = true;
+
+    let correct = questions[current].c;
+
+    if (answer === correct) {
+
+        score++;
+
+        document.getElementById("result").innerText =
+            "🎉 Correct Answer!";
+
+        button.style.background = "green";
+
+    } else {
+
+        document.getElementById("result").innerText =
+            "❌ Wrong! Correct answer: " + correct;
+
+        button.style.background = "red";
+
+    }
+
+    // Highlight correct answer
+
+    document.querySelectorAll("#answers button").forEach(btn => {
+
+        btn.disabled = true;
+
+        if (btn.innerText.trim() === correct) {
+            btn.style.background = "green";
+        }
+
+    });
+
+    document.getElementById("score").innerText =
+        "Score: " + score;
+
+}
+
+
+// NEXT QUESTION
+
+function nextQuestion() {
+
+    if (!answered) {
+
+        alert("Please select an answer first!");
+
+        return;
+
+    }
+
+    current++;
+
+    if (current < questions.length) {
+
+        loadQuestion();
+
+    } else {
+
+        showResult();
+
+    }
+
+}
+
+
+// FINAL RESULT
+
+function showResult() {
+
+    let percentage = (score / 20) * 100;
+
+    let message;
+
+    if (score >= 18) {
+        message = "🏆 Outstanding!";
+    } else if (score >= 15) {
+        message = "🌟 Excellent Work!";
+    } else if (score >= 10) {
+        message = "👍 Good Job!";
+    } else {
+        message = "📚 Keep Practicing!";
+    }
+
+    document.querySelector(".quiz").innerHTML = `
+
+        <h1>🎉 Quiz Completed!</h1>
+
+        <h2>${message}</h2>
+
+        <h2>Your Score: ${score}/20</h2>
+
+        <h3>Percentage: ${percentage}%</h3>
+
+        <button onclick="restartQuiz()">
+            🔄 Play Again
+        </button>
+
+    `;
+
+}
+
+function restartQuiz() {
+
+    // Restore the quiz screen
+    document.querySelector(".quiz").innerHTML = `
+        <h1>🎮 Quiz Game</h1>
+        <h3 id="progress">Question 1 of 20</h3>
+        <h2 id="question">Loading...</h2>
+        <div id="answers"></div>
+        <p id="result"></p>
+        <p id="score">Score: 0</p>
+        <button onclick="nextQuestion()" id="next">
+            Next Question
+        </button>
+    `;
+
+    // Generate new random questions
+    questions = shuffleQuestions(allQuestions).slice(0, 20);
+
+    // Reset game variables
+    current = 0;
+    score = 0;
+    answered = false;
+
+    // Start new game
+    loadQuestion();
+}
+loadQuestion();
+</script>
+
+</body>
+</html>
