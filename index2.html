@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Temple Run Adventure</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #101c13;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: white;
+}
+
+h1 {
+  padding: 12px;
+  color: gold;
+}
+
+#game {
+  width: 360px;
+  height: 550px;
+  margin: 10px auto;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(#246b36, #8a6a36);
+  border: 5px solid #d6a34b;
+  border-radius: 12px;
+}
+
+#road {
+  position: absolute;
+  width: 210px;
+  height: 100%;
+  left: 75px;
+  background: #62503a;
+  border-left: 5px dashed #d7c28b;
+  border-right: 5px dashed #d7c28b;
+}
+
+#player {
+  position: absolute;
+  bottom: 35px;
+  left: 155px;
+  font-size: 42px;
+  z-index: 5;
+  transition: left 0.12s;
+}
+
+.item {
+  position: absolute;
+  font-size: 34px;
+}
+
+#score {
+  font-size: 22px;
+  color: gold;
+  margin: 8px;
+}
+
+#message {
+  margin: 8px;
+  font-size: 18px;
+}
+
+button {
+  background: orange;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.controls {
+  margin: 10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🏛️ TEMPLE RUN 🏃</h1>
+
+<div id="score">Score: 0 | Coins: 0</div>
+
+<div id="game">
+  <div id="road"></div>
+  <div id="player">🏃</div>
+</div>
+
+<div id="message">Collect coins and avoid obstacles!</div>
+
+<div class="controls">
+  <button onclick="move(-1)">⬅️ LEFT</button>
+  <button onclick="jump()">⬆️ JUMP</button>
+  <button onclick="move(1)">RIGHT ➡️</button>
+  <button onclick="slide()">⬇️ SLIDE</button>
+</div>
+
+<button onclick="startGame()">🔄 RESTART GAME</button>
+
+<script>
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const scoreText = document.getElementById("score");
+const message = document.getElementById("message");
+
+let lane = 1;
+let score = 0;
+let coins = 0;
+let speed = 4;
+let running = false;
+let jumping = false;
+let sliding = false;
+let items = [];
+let gameLoop;
+let spawnLoop;
+
+function updatePlayer() {
+  player.style.left = (50 + lane * 85) + "px";
+}
+
+function move(direction) {
+  if (!running) return;
+  lane = Math.max(0, Math.min(2, lane + direction));
+  updatePlayer();
+}
+
+function jump() {
+  if (!running || jumping || sliding) return;
+
+  jumping = true;
+  player.style.transform = "translateY(-100px)";
+
+  setTimeout(() => {
+    player.style.transform = "";
+    jumping = false;
+  }, 650);
+}
+
+function slide() {
+  if (!running || sliding || jumping) return;
+
+  sliding = true;
+  player.style.transform = "scaleY(0.45)";
+
+  setTimeout(() => {
+    player.style.transform = "";
+    sliding = false;
+  }, 650);
+}
+
+function spawnItem() {
+  if (!running) return;
+
+  const item = document.createElement("div");
+  item.className = "item";
+
+  const isCoin = Math.random() < 0.45;
+
+  item.textContent = isCoin ? "🪙" :
+    (Math.random() < 0.5 ? "🪨" : "🌳");
+
+  const itemLane = Math.floor(Math.random() * 3);
+
+  item.style.left = (50 + itemLane * 85) + "px";
+  item.style.top = "-40px";
+
+  game.appendChild(item);
+
+  items.push({
+    element: item,
+    lane: itemLane,
+    y: -40,
+    coin: isCoin
+  });
+}
+
+function endGame() {
+  running = false;
+  clearInterval(gameLoop);
+  clearInterval(spawnLoop);
+  message.innerHTML = "💥 GAME OVER! Final Score: " + score;
+}
+
+function update() {
+  if (!running) return;
+
+  score++;
+
+  items.forEach((item, index) => {
+    item.y += speed;
+    item.element.style.top = item.y + "px";
+
+    if (item.y > 455 && item.y < 525 &&
+        item.lane === lane) {
+
+      if (item.coin) {
+        coins++;
+        item.element.remove();
+        items.splice(index, 1);
+        return;
+      }
+
+      if (!jumping && !sliding) {
+        endGame();
+        return;
+      }
+    }
+
+    if (item.y > 560) {
+      item.element.remove();
+      items.splice(index, 1);
+    }
+  });
+
+  scoreText.innerText =
+    "Score: " + score + " | Coins: " + coins;
+
+  if (score % 500 === 0) speed += 0.3;
+}
+
+function startGame() {
+  clearInterval(gameLoop);
+  clearInterval(spawnLoop);
+
+  items.forEach(item => item.element.remove());
+  items = [];
+
+  lane = 1;
+  score = 0;
+  coins = 0;
+  speed = 4;
+  jumping = false;
+  sliding = false;
+  running = true;
+
+  player.style.transform = "";
+  updatePlayer();
+
+  message.innerText = "Run! Collect coins and escape!";
+  gameLoop = setInterval(update, 25);
+  spawnLoop = setInterval(spawnItem, 1000);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" || e.key === "a") move(-1);
+  if (e.key === "ArrowRight" || e.key === "d") move(1);
+  if (e.key === "ArrowUp" || e.key === "w") jump();
+  if (e.key === "ArrowDown" || e.key === "s") slide();
+});
+
+startGame();
+</script>
+
+</body>
+</html>
